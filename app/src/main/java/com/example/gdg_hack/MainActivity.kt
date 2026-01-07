@@ -20,8 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.gdg_hack.ui.MainDashboard
 import com.example.gdg_hack.ui.theme.GDG_HackTheme
-import com.example.gdg_hack.ui.theme.MainDashboard
 
 class MainActivity : ComponentActivity() {
 
@@ -50,29 +51,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-}
-
-@Composable
-fun UsageAccessGate() {
-    val context = LocalContext.current
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Usage Access Required")
-        Spacer(Modifier.height(16.dp))
-        Button(onClick = { openUsageAccessSettings(context) }) {
-            Text("Grant Usage Access")
-        }
-    }
-}
-
-/* ---------------- Helpers ---------------- */
-
-fun openUsageAccessSettings(context: Context) {
-    context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
 }
 
 fun hasUsageAccess(context: Context): Boolean {
@@ -83,4 +61,27 @@ fun hasUsageAccess(context: Context): Boolean {
         context.packageName
     )
     return mode == AppOpsManager.MODE_ALLOWED
+}
+
+@Composable
+fun UsageAccessGate() {
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Usage Access Required")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = {
+            context.startActivity(
+                Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+            )
+        }) {
+            Text("Grant Usage Access")
+        }
+    }
 }

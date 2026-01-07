@@ -1,9 +1,14 @@
 package com.example.gdg_hack.ui.theme
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -19,6 +24,8 @@ fun AppItem(
     val finalScore = if (runtimeCameraRisk) baseScore + 5 else baseScore
     val level = getRiskLevel(finalScore)
     val over = detectOverPermissions(app)
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedPermission by remember { mutableStateOf("") }
 
     val color = when (level) {
         "DANGEROUS" -> DangerRed
@@ -70,10 +77,47 @@ fun AppItem(
 
             if (over.isNotEmpty()) {
                 Spacer(Modifier.height(6.dp))
-                over.forEach {
-                    Text("• $it", color = Color.Red, fontSize = 12.sp)
+                over.forEach { perm ->
+                    Text(
+                        text = "• $perm",
+                        color = Color.Red,
+                        modifier = Modifier.clickable {
+                            selectedPermission = perm
+                            showDialog = true
+                        }
+                    )
                 }
+
             }
         }
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                confirmButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("OK")
+                    }
+                },
+                title = { Text("Permission Risk") },
+                text = {
+                    Text(
+                        when (selectedPermission) {
+                            android.Manifest.permission.CAMERA ->
+                                "Camera access can capture photos or videos without your knowledge."
+
+                            android.Manifest.permission.RECORD_AUDIO ->
+                                "Microphone access can record conversations silently."
+
+                            android.Manifest.permission.ACCESS_FINE_LOCATION ->
+                                "Location access can track your movements in real time."
+
+                            else ->
+                                "This permission may expose sensitive personal data."
+                        }
+                    )
+                }
+            )
+        }
+
     }
 }
