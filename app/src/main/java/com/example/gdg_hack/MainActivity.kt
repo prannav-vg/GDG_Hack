@@ -25,6 +25,12 @@ import com.example.gdg_hack.ui.MainDashboard
 import com.example.gdg_hack.ui.theme.GDG_HackTheme
 
 class MainActivity : ComponentActivity() {
+    private val micPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (!granted) {
+                Toast.makeText(this, "Microphone permission required", Toast.LENGTH_SHORT).show()
+            }
+        }
 
     private val cameraPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -38,6 +44,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             GDG_HackTheme {
+                LaunchedEffect(Unit) {
+                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                    micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                }
 
                 LaunchedEffect(Unit) {
                     cameraPermissionLauncher.launch(Manifest.permission.CAMERA)

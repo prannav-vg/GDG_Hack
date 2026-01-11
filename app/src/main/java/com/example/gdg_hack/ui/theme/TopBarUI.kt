@@ -23,20 +23,23 @@ fun ShadowTopBar() {
             .fillMaxWidth()
             .background(
                 Brush.horizontalGradient(
-                    listOf(Color(0xFF6A11CB), Color(0xFF2575FC))
+                    listOf(
+                        Color(0xFF6A11CB),
+                        Color(0xFF2575FC)
+                    )
                 )
             )
-            .padding(16.dp)
+            .padding(vertical = 20.dp, horizontal = 16.dp)
     ) {
         Column {
             Text(
-                "ShadowData",
+                text = "ShadowData",
                 color = Color.White,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                "Privacy & Permission Monitor",
+                text = "Privacy & Permission Monitor",
                 color = Color.White.copy(alpha = 0.85f),
                 fontSize = 13.sp
             )

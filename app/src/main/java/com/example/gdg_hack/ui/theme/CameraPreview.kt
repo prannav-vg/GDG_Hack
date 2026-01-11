@@ -13,6 +13,8 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.example.gdg_hack.ui.PrivacyTimelineState
+
 @Composable
 fun InAppCameraPreview(
     onCameraDetected: () -> Unit
@@ -55,11 +57,7 @@ fun InAppCameraPreview(
                 if (!detected) {
                     detected = true
                     onCameraDetected()
-                    Toast.makeText(
-                        context,
-                        "📷 Camera accessed",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    PrivacyTimelineState.log("Camera accessed")
                 }
 
             }, ContextCompat.getMainExecutor(ctx))
