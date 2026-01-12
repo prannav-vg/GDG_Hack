@@ -20,7 +20,7 @@ fun PrivacyTimeline() {
     Column(modifier = Modifier.padding(8.dp)) {
         Text(
             "🕒 Privacy Timeline",
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(Modifier.height(8.dp))
@@ -28,7 +28,7 @@ fun PrivacyTimeline() {
         events.take(5).forEach { event ->
             Text(
                 "• ${event.timestamp} – ${event.message}",
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

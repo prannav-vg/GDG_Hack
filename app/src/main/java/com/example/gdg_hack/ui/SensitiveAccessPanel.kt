@@ -30,14 +30,14 @@ fun SensitiveAccessPanel(
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
 
-            Text("🔐 Sensitive Access Overview", fontWeight = FontWeight.Bold)
+            Text("🔐 Sensitive Access Overview", fontWeight = FontWeight.Bold, color = Color.Black)
 
             Spacer(Modifier.height(8.dp))
 
-            AccessRow("📷 Camera", camera)
-            AccessRow("🎙️ Microphone", mic)
-            AccessRow("📇 Contacts", contacts)
-            AccessRow("📍 Location", location)
+            AccessRow("Camera", camera)
+            AccessRow("Microphone", mic)
+            AccessRow("Contacts", contacts)
+            AccessRow("Location", location)
         }
     }
 }
@@ -47,7 +47,7 @@ fun AccessRow(label: String, active: Boolean) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label)
+        Text(label, color = Color.DarkGray)
         Text(
             if (active) "ACTIVE" else "INACTIVE",
             color = if (active) Color.Red else Color(0xFF2E7D32),

@@ -1,4 +1,9 @@
 package com.example.gdg_hack
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gdg_hack.ui.theme.CardBackground
@@ -20,8 +26,9 @@ import com.example.gdg_hack.ui.theme.WarningOrange
 fun AppItemUI(
     app: AppInfo,
     runtimeCameraRisk: Boolean,
-    runtimeMicRisk: Boolean
-) {
+    runtimeMicRisk: Boolean,
+    onClick: (() -> Unit)? = null
+){
     // ---------- AI SETUP ----------
     val context = LocalContext.current
     val predictor = remember { RiskPredictor(context) }
@@ -35,13 +42,21 @@ fun AppItemUI(
         1 -> "SUSPICIOUS"
         else -> "DANGEROUS"
     }
+    // ---------- FINAL RISK (AI HAS PRIORITY) ----------
+    val finalRiskLabel = aiRiskLabel
+
+    val finalRiskColor = when (finalRiskLabel) {
+        "SAFE" -> SafeGreen
+        "SUSPICIOUS" -> WarningOrange
+        else -> DangerRed
+    }
 
     // ---------- RULE-BASED LOGIC ----------
     val baseScore = calculateRiskScore(app)
     val finalScore = if (runtimeCameraRisk) baseScore + 5 else baseScore
     val level = getRiskLevel(finalScore)
     val over = detectOverPermissions(app)
-
+    var showDetails by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var selectedPermission by remember { mutableStateOf("") }
 
@@ -55,7 +70,10 @@ fun AppItemUI(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .let {
+                if (onClick != null) it.clickable { onClick() } else it
+            },
         colors = CardDefaults.cardColors(containerColor = CardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -66,15 +84,23 @@ fun AppItemUI(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(app.appName, fontWeight = FontWeight.Bold)
-
+                Text(
+                    text = if (app.appName.length > 18)
+                        app.appName.take(18) + "..."
+                    else
+                        app.appName,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Surface(
-                    color = color.copy(alpha = 0.15f),
+                    color = finalRiskColor.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(50)
-                ) {
+                ){
                     Text(
-                        text = level,
-                        color = color,
+                        text = finalRiskLabel,
+                        color = finalRiskColor,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -93,54 +119,99 @@ fun AppItemUI(
                 style = MaterialTheme.typography.bodySmall
             )
 
-            Text("Risk Score: $finalScore", style = MaterialTheme.typography.bodySmall)
+            Text("Risk Score: $finalScore", style = MaterialTheme.typography.bodySmall,color = MaterialTheme.colorScheme.onSurface)
 
-            // Sensitive permissions
-            app.permissions.forEach { permission ->
-                if (
-                    permission.contains("RECORD_AUDIO") ||
-                    permission.contains("READ_CONTACTS") ||
-                    permission.contains("ACCESS_FINE_LOCATION") ||
-                    permission.contains("READ_SMS")
-                ) {
-                    Text(
-                        text = "⚠ ${permission.substringAfterLast('.')}",
-                        color = Color.Red,
-                        fontSize = 12.sp
-                    )
-                }
-            }
-
-            Text(
-                "Permissions: ${app.permissions.size}",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.Gray
-            )
-
-            // Runtime camera
-            if (runtimeCameraRisk) {
-                Spacer(Modifier.height(4.dp))
+            TextButton(
+                onClick = { showDetails = !showDetails }
+            ) {
                 Text(
-                    "LIVE: Camera access detected",
-                    color = Color.Red,
-                    style = MaterialTheme.typography.labelSmall
+                    text = if (showDetails) "Hide Details ▲" else "Show Details ▼",
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
-            // Over-permission dialog
-            if (over.isNotEmpty()) {
-                Spacer(Modifier.height(6.dp))
-                over.forEach { perm ->
+            AnimatedVisibility(
+                visible = showDetails,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Column {
+
+                    // 🔐 Permissions count
                     Text(
-                        text = "• $perm",
-                        color = Color.Red,
-                        modifier = Modifier.clickable {
-                            selectedPermission = perm
-                            showDialog = true
-                        }
+                        "Permissions: ${app.permissions.size}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
+
+                    // ⚠️ Sensitive permissions
+                    // 🔐 User-friendly permission explanations
+                    val readablePermissions = app.permissions
+                        .map { PermissionMapper.getFriendlyName(it) } // 🔑 map FIRST
+                        .distinct()                                   // remove duplicates
+                        .sorted()
+
+                    Text(
+                        "What this app can do:",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    )
+
+                    Spacer(Modifier.height(4.dp))
+
+                    readablePermissions.forEach { friendly ->
+                        Text(
+                            text = "• $friendly",
+                            color = WarningOrange,
+                            fontSize = 13.sp
+                        )
+                    }
+
+
+                    // 📷 Runtime camera
+                    if (runtimeCameraRisk) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "LIVE: Camera access detected",
+                            color = DangerRed,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+
+                    // 🎙 Runtime mic
+                    if (runtimeMicRisk) {
+                        Text(
+                            "LIVE: Microphone access detected",
+                            color = WarningOrange,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+
+                    // 🚨 Over-permission warnings (USER FRIENDLY)
+                    if (over.isNotEmpty()) {
+                        Spacer(Modifier.height(6.dp))
+
+                        Text(
+                            "High-risk permissions:",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        over
+                            .map { PermissionMapper.getFriendlyName(it) }
+                            .distinct()
+                            .forEach { friendly ->
+                                Text(
+                                    text = "• $friendly",
+                                    color = DangerRed,
+                                    fontSize = 13.sp
+                                )
+                            }
+                    }
+
                 }
             }
+
         }
     }
 

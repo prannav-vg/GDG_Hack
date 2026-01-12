@@ -1,7 +1,6 @@
 package com.example.gdg_hack
 
 import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 
 fun getInstalledApps(context: Context): List<AppInfo> {
@@ -13,7 +12,7 @@ fun getInstalledApps(context: Context): List<AppInfo> {
         val appInfo = pkg.applicationInfo ?: continue
 
         // Skip system apps
-        if ((appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0) continue
+        //if ((appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0) continue
 
         val categoryId = try {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

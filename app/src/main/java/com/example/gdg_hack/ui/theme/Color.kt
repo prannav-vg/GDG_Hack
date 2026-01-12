@@ -14,5 +14,5 @@ val SafeGreen = Color(0xFF2ECC71)
 val WarningOrange = Color(0xFFF39C12)
 val DangerRed = Color(0xFFE74C3C)
 
-val CardBackground = Color(0xFFF8F9FB)
+val CardBackground = Color.Black
 val ScreenBackground = Color(0xFFF1F4F9)
