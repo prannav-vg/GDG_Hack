@@ -1,6 +1,7 @@
 package com.example.gdg_hack.ui
 
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -19,14 +20,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,42 +44,17 @@ import com.example.gdg_hack.AppInfo
 import com.example.gdg_hack.InAppCameraPreview
 import com.example.gdg_hack.MicUsageMonitor1
 import com.example.gdg_hack.getInstalledApps
+import com.example.gdg_hack.ui.navigation.BottomNavItem
+import com.example.gdg_hack.ui.safety.WomenSafetyState
+import com.example.gdg_hack.ui.safety.disableWomenSafety
+import com.example.gdg_hack.ui.safety.enableWomenSafety
+import android.provider.Settings
 
 
 @Composable
 fun MainDashboard(onViewApps: () -> Unit) {
 
     val context = LocalContext.current
-    val realApps = remember { getInstalledApps(context) }
-
-    val demoApps = listOf(
-        AppInfo(
-            appName = "Demo Chat App",
-            packageName = "com.demo.chat",
-            permissions = listOf(
-                "android.permission.RECORD_AUDIO",
-                "android.permission.READ_CONTACTS"
-            ),
-            categoryId = 3
-        ),
-        AppInfo(
-            appName = "Demo Camera App",
-            packageName = "com.demo.camera",
-            permissions = listOf(
-                "android.permission.CAMERA",
-                "android.permission.ACCESS_FINE_LOCATION"
-            ),
-            categoryId = 2
-        ),
-        AppInfo(
-            appName = "Demo Maps App",
-            packageName = "com.demo.maps",
-            permissions = listOf(
-                "android.permission.ACCESS_FINE_LOCATION"
-            ),
-            categoryId = 1
-        )
-    )
 
 // 🔥 Combine real + demo apps
     val apps = remember {
@@ -101,10 +80,9 @@ fun MainDashboard(onViewApps: () -> Unit) {
     }
 
     var micActiveApp by remember { mutableStateOf<String?>(null) }
+    var showPrivacyViolationDialog by remember { mutableStateOf(false) }
 
     val micMonitor = remember { MicUsageMonitor1() }
-
-    var womenSafetyMode by remember { mutableStateOf(false) }
     var showCamera by remember { mutableStateOf(false) }
     var runtimeCameraRisk by remember { mutableStateOf(false) }
 
@@ -145,33 +123,67 @@ fun MainDashboard(onViewApps: () -> Unit) {
             )
             {
                 DashboardStat("Apps", apps.size.toString())
-                DashboardStat("Camera", if (runtimeCameraRisk) "ON" else "OFF")
-                DashboardStat("Mic", if (micActiveApp != null) "ON" else "OFF")
+                DashboardStat(
+                    "Camera",
+                    if (WomenSafetyState.enabled) "LOCKED"
+                    else if (runtimeCameraRisk) "ON"
+                    else "OFF"
+                )
+
+                DashboardStat(
+                    "Mic",
+                    if (WomenSafetyState.enabled) "LOCKED"
+                    else if (micActiveApp != null) "ON"
+                    else "OFF"
+                )
+
 
             }
         }
-
-        // 🔹 PRIVACY TIMELINE
-        item{ PrivacyTimeline() }
-
         item{ Spacer(Modifier.height(8.dp)) }
 
         // 🔹 WOMEN SAFETY MODE
-        item{
-            SafetyControlsSection(
-                womenSafetyMode = womenSafetyMode,
-                onToggle = {
-                    womenSafetyMode = it
-                    if (it) {
-                        PrivacyTimelineState.log("Women Safety Mode enabled")
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+
+                    Column {
+                        Text(
+                            text = "Privacy Mode",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Locks camera & microphone system-wide",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
+
+                    Switch(
+                        checked = WomenSafetyState.enabled,
+                        onCheckedChange = { enabled ->
+                            if (enabled) enableWomenSafety(context)
+                            else disableWomenSafety()
+                        }
+                    )
                 }
-            )
+            }
         }
 
-        item{ Spacer(Modifier.height(12.dp)) }
         item {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(24.dp))
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -199,7 +211,7 @@ fun MainDashboard(onViewApps: () -> Unit) {
                         modifier = Modifier.fillMaxWidth()
                     ,
                     ) {
-                        Text("🎙️ Test Microphone")
+                        Text("Test Microphone")
                     }
 
                     TextButton(onClick = {
@@ -221,7 +233,7 @@ fun MainDashboard(onViewApps: () -> Unit) {
                         )
 
                     ) {
-                        Text("📷 Open Camera", color = MaterialTheme.colorScheme.onError)
+                        Text("Open Camera", color = MaterialTheme.colorScheme.onError)
                     }
                 }
             }
@@ -284,6 +296,54 @@ fun MainDashboard(onViewApps: () -> Unit) {
         }
 
     }
+    LaunchedEffect(runtimeCameraRisk, micActiveApp) {
+            if (WomenSafetyState.enabled &&
+                (runtimeCameraRisk || micActiveApp != null)
+            ) {
+                PrivacyTimelineState.log(
+                    "Privacy violation: Camera/Mic accessed during Women Safety Mode"
+                )
+                showPrivacyViolationDialog = true
+            }
+        }
+    if (showPrivacyViolationDialog) {
+        AlertDialog(
+            onDismissRequest = { /* block dismiss */ },
+            title = {
+                Text("🚨 Privacy Lock Violation")
+            },
+            text = {
+                Text(
+                    "An application attempted to access your camera or microphone " +
+                            "while Women Safety Mode is active."
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showPrivacyViolationDialog = false
+                        context.startActivity(
+                            Intent(Settings.ACTION_PRIVACY_SETTINGS)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    }
+                ) {
+                    Text("Disable Camera & Mic")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showPrivacyViolationDialog = false
+                        WomenSafetyState.enabled = false
+                    }
+                ) {
+                    Text("Exit Safety Mode")
+                }
+            }
+        )
+    }
+
 }
 
 
