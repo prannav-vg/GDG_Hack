@@ -1,6 +1,5 @@
 package com.example.gdg_hack.ui
 
-import android.R.attr.textColor
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle

@@ -295,7 +295,7 @@ fun MainDashboard(onViewApps: () -> Unit) {
             }
         }
 
-    }
+       }
     LaunchedEffect(runtimeCameraRisk, micActiveApp) {
             if (WomenSafetyState.enabled &&
                 (runtimeCameraRisk || micActiveApp != null)
