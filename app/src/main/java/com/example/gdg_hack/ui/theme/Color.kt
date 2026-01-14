@@ -16,3 +16,8 @@ val DangerRed = Color(0xFFE74C3C)
 
 val CardBackground = Color.Black
 val ScreenBackground = Color(0xFFF1F4F9)
+// 🌌 DARK MODE (BLUE THEME)
+val DarkBlueSurface = Color(0xFF0D1B2A)
+val DarkBlueCard = Color(0xFF1B263B)
+val LightBlueAccent = Color(0xFF0B1763)
+val DarkTextWhite = Color(0xFFFFFFFF)

@@ -3,8 +3,6 @@ package com.example.gdg_hack.ui.alerts
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,54 +16,35 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertsScreen(onBack: () -> Unit) {
 
+    val context = LocalContext.current
     val incidents = remember { IncidentStore.getHighRisk() }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Alerts & Incidents") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = null)
-                    }
-                }
+    LaunchedEffect(Unit) {
+        IncidentStore.log(
+            Incident(
+                message = "Test incident: Microphone accessed during Safety Mode",
+                severity = Severity.CRITICAL,
+                timestamp = SimpleDateFormat(
+                    "dd MMM yyyy, HH:mm",
+                    Locale.getDefault()
+                ).format(Date())
             )
-        }
-    ) { padding ->
+        )
+    }
 
-        val context = LocalContext.current
-        val incidents = IncidentStore.getHighRisk()
-        LaunchedEffect(Unit) {
-            IncidentStore.log(
-                Incident(
-                    message = "Test incident: Microphone accessed during Safety Mode",
-                    severity = Severity.CRITICAL,
-                    timestamp = SimpleDateFormat(
-                        "dd MMM yyyy, HH:mm",
-                        Locale.getDefault()
-                    ).format(Date())
-                )
-            )
-        }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 16.dp)
+    ) {
 
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-
-            // 🔹 EXPORT BUTTON (NOW VISIBLE)
+        // 🔹 EXPORT BUTTONS
+        item {
             Button(
                 onClick = {
-                    val file = IncidentExporter.exportToCsv(
-                        context,
-                        incidents
-                    )
-
+                    val file = IncidentExporter.exportToCsv(context, incidents)
                     Toast.makeText(
                         context,
                         "Report exported: ${file.name}",
@@ -78,13 +57,12 @@ fun AlertsScreen(onBack: () -> Unit) {
             ) {
                 Text("📤 Export Security Report (CSV)")
             }
+        }
+
+        item {
             Button(
                 onClick = {
-                    val file = IncidentPdfExporter.exportToPdf(
-                        context,
-                        incidents
-                    )
-
+                    val file = IncidentPdfExporter.exportToPdf(context, incidents)
                     Toast.makeText(
                         context,
                         "PDF exported: ${file.name}",
@@ -97,55 +75,57 @@ fun AlertsScreen(onBack: () -> Unit) {
             ) {
                 Text("📄 Export Security Report (PDF)")
             }
+        }
 
-            // 🔹 INCIDENT LIST / EMPTY STATE
-            if (incidents.isEmpty()) {
+        // 🔹 EMPTY STATE
+        if (incidents.isEmpty()) {
+            item {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text("No high-risk incidents detected")
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
+            }
+        } else {
+
+            // 🔹 INCIDENT LIST
+            items(incidents) { incident ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor =
+                            if (incident.severity == Severity.CRITICAL)
+                                MaterialTheme.colorScheme.errorContainer
+                            else
+                                MaterialTheme.colorScheme.surface
+                    )
                 ) {
-                    items(incidents) { incident ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor =
-                                    if (incident.severity == Severity.CRITICAL)
-                                        MaterialTheme.colorScheme.errorContainer
-                                    else
-                                        MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        ) {
-                            Column(Modifier.padding(12.dp)) {
-                                Text(
-                                    incident.message,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    incident.severity.name,
-                                    color =
-                                        if (incident.severity == Severity.CRITICAL)
-                                            MaterialTheme.colorScheme.error
-                                        else
-                                            MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    incident.timestamp,
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            }
-                        }
+                    Column(Modifier.padding(12.dp)) {
+                        Text(
+                            incident.message,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            incident.severity.name,
+                            color =
+                                if (incident.severity == Severity.CRITICAL)
+                                    MaterialTheme.colorScheme.error
+                                else
+                                    MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            incident.timestamp,
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
                 }
             }
         }
     }
-
 }
+

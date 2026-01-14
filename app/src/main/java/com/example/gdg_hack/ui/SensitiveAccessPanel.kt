@@ -11,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key.Companion.Ro
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -26,11 +25,15 @@ fun SensitiveAccessPanel(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E5F5))
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
 
-            Text("🔐 Sensitive Access Overview", fontWeight = FontWeight.Bold, color = Color.Black)
+            Text("🔐 Sensitive Access Overview", fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface)
 
             Spacer(Modifier.height(8.dp))
 
@@ -47,7 +50,7 @@ fun AccessRow(label: String, active: Boolean) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, color = Color.DarkGray)
+        Text(label,color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
         Text(
             if (active) "ACTIVE" else "INACTIVE",
             color = if (active) Color.Red else Color(0xFF2E7D32),

@@ -60,12 +60,6 @@ fun AppItemUI(
     var showDialog by remember { mutableStateOf(false) }
     var selectedPermission by remember { mutableStateOf("") }
 
-    val color = when (level) {
-        "DANGEROUS" -> DangerRed
-        "WARNING" -> WarningOrange
-        else -> SafeGreen
-    }
-
     // ---------- UI ----------
     Card(
         modifier = Modifier
@@ -74,7 +68,9 @@ fun AppItemUI(
             .let {
                 if (onClick != null) it.clickable { onClick() } else it
             },
-        colors = CardDefaults.cardColors(containerColor = CardBackground),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(Modifier.padding(12.dp)) {
@@ -111,13 +107,10 @@ fun AppItemUI(
             // AI risk
             Text(
                 text = "AI Risk: $aiRiskLabel",
-                color = when (aiRiskLabel) {
-                    "SAFE" -> Color.Green
-                    "SUSPICIOUS" -> Color(0xFFFF9800)
-                    else -> Color.Red
-                },
+                color = finalRiskColor,
                 style = MaterialTheme.typography.bodySmall
             )
+
 
             Text("Risk Score: $finalScore", style = MaterialTheme.typography.bodySmall,color = MaterialTheme.colorScheme.onSurface)
 
@@ -126,7 +119,7 @@ fun AppItemUI(
             ) {
                 Text(
                     text = if (showDetails) "Hide Details ▲" else "Show Details ▼",
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
@@ -162,10 +155,11 @@ fun AppItemUI(
                     readablePermissions.forEach { friendly ->
                         Text(
                             text = "• $friendly",
-                            color = WarningOrange,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 13.sp
                         )
                     }
+
 
 
                     // 📷 Runtime camera

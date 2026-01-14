@@ -13,8 +13,12 @@ import com.example.gdg_hack.ui.settings.SettingsScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    isDarkMode: Boolean,
+    onDarkModeToggle: (Boolean) -> Unit,
+    onBottomBarVisibilityChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
-) {
+)
+ {
     NavHost(
         navController = navController,
         startDestination = NavRoutes.Dashboard.route,
@@ -25,7 +29,7 @@ fun AppNavHost(
             MainDashboard(
                 onViewApps = {
                     navController.navigate(NavRoutes.AppList.route)
-                }
+                },onBottomBarVisibilityChange = onBottomBarVisibilityChange
             )
         }
 
@@ -54,12 +58,13 @@ fun AppNavHost(
         composable(NavRoutes.Settings.route) {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
-                darkMode = false,
-                onDarkModeToggle = {},
+                darkMode = isDarkMode,
+                onDarkModeToggle = onDarkModeToggle,
                 onAboutClick = {
                     navController.navigate(NavRoutes.About.route)
                 }
             )
+
         }
 
 

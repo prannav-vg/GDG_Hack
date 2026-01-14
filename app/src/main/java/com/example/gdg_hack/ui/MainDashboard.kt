@@ -8,7 +8,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -44,35 +42,33 @@ import com.example.gdg_hack.AppInfo
 import com.example.gdg_hack.InAppCameraPreview
 import com.example.gdg_hack.MicUsageMonitor1
 import com.example.gdg_hack.getInstalledApps
-import com.example.gdg_hack.ui.navigation.BottomNavItem
 import com.example.gdg_hack.ui.safety.WomenSafetyState
 import com.example.gdg_hack.ui.safety.disableWomenSafety
 import com.example.gdg_hack.ui.safety.enableWomenSafety
 import android.provider.Settings
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.ui.graphics.Color
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainDashboard(onViewApps: () -> Unit) {
-
+fun MainDashboard(
+    onViewApps: () -> Unit,
+    onBottomBarVisibilityChange: (Boolean) -> Unit
+) {
     val context = LocalContext.current
 
-// 🔥 Combine real + demo apps
+    // 🔥 Combine real + demo apps
     val apps = remember {
         getInstalledApps(context)
             .sortedWith(compareBy<AppInfo> { app ->
                 when {
-                    // 1️⃣ Your app (GDG_Hack)
                     app.packageName == context.packageName -> 0
-
-                    // 2️⃣ YouTube
                     app.packageName == "com.google.android.youtube" ||
                             app.appName.contains("YouTube", ignoreCase = true) -> 1
-
-                    // 3️⃣ Calendar
-                    app.packageName.contains("calendar", ignoreCase = true) ||
-                            app.appName.contains("Calendar", ignoreCase = true) -> 2
-
-                    // 4️⃣ Any other app
+                    app.appName.contains("calendar", ignoreCase = true) -> 2
                     else -> 3
                 }
             })
@@ -86,232 +82,215 @@ fun MainDashboard(onViewApps: () -> Unit) {
     var showCamera by remember { mutableStateOf(false) }
     var runtimeCameraRisk by remember { mutableStateOf(false) }
 
-    // Handle back press when camera is open
     BackHandler(enabled = showCamera) {
         showCamera = false
         runtimeCameraRisk = false
     }
+
+    val listState = rememberLazyListState()
+
+
+
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-        ,
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 16.dp)
-    ) {
+    ){
 
+            item { Spacer(Modifier.height(8.dp)) }
 
-        // 🔹 TOP BAR
-        item{ ShadowTopBar() }
+            // 🔹 SECURITY STATUS
+            item { SecurityStatusCard(runtimeCameraRisk) }
 
-        item{ Spacer(Modifier.height(8.dp)) }
+            item { Spacer(Modifier.height(12.dp)) }
 
-        // 🔹 SECURITY STATUS CARD
-        item{ SecurityStatusCard(runtimeCameraRisk) }
-
-        item{ Spacer(Modifier.height(8.dp)) }
-
-
-        item{ Spacer(Modifier.height(8.dp)) }
-
-        item {
-            Spacer(Modifier.height(8.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            )
-            {
-                DashboardStat("Apps", apps.size.toString())
-                DashboardStat(
-                    "Camera",
-                    if (WomenSafetyState.enabled) "LOCKED"
-                    else if (runtimeCameraRisk) "ON"
-                    else "OFF"
-                )
-
-                DashboardStat(
-                    "Mic",
-                    if (WomenSafetyState.enabled) "LOCKED"
-                    else if (micActiveApp != null) "ON"
-                    else "OFF"
-                )
-
-
-            }
-        }
-        item{ Spacer(Modifier.height(8.dp)) }
-
-        // 🔹 WOMEN SAFETY MODE
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
+            // 🔹 STATS
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(horizontal = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    DashboardStat("Apps", apps.size.toString())
+                    DashboardStat(
+                        "Camera",
+                        if (WomenSafetyState.enabled) "LOCKED"
+                        else if (runtimeCameraRisk) "ON"
+                        else "OFF"
+                    )
+                    DashboardStat(
+                        "Mic",
+                        if (WomenSafetyState.enabled) "LOCKED"
+                        else if (micActiveApp != null) "ON"
+                        else "OFF"
+                    )
+                }
+            }
 
-                    Column {
+            item { Spacer(Modifier.height(12.dp)) }
+
+            // 🔹 WOMEN SAFETY MODE
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Privacy Mode",
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Locks camera & microphone system-wide",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        }
+                        Switch(
+                            checked = WomenSafetyState.enabled,
+                            onCheckedChange = {
+                                if (it) enableWomenSafety(context)
+                                else disableWomenSafety()
+                            }
+                        )
+                    }
+                }
+            }
+
+            item { Spacer(Modifier.height(16.dp)) }
+
+            // 🔹 LIVE TESTS
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(6.dp)
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+
                         Text(
-                            text = "Privacy Mode",
-                            style = MaterialTheme.typography.titleMedium,
+                            text = "Live Permission Tests",
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
-                            text = "Locks camera & microphone system-wide",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
 
-                    Switch(
-                        checked = WomenSafetyState.enabled,
-                        onCheckedChange = { enabled ->
-                            if (enabled) enableWomenSafety(context)
-                            else disableWomenSafety()
+                        Spacer(Modifier.height(8.dp))
+
+                        Button(
+                            onClick = {
+                                micMonitor.startMonitoring {
+                                    micActiveApp = context.packageName
+                                    PrivacyTimelineState.log("Microphone accessed")
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Test Microphone")
                         }
-                    )
-                }
-            }
-        }
 
-        item {
-            Spacer(Modifier.height(24.dp))
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                elevation = CardDefaults.cardElevation(6.dp)
-            ) {
-                Column(Modifier.padding(16.dp)) {
-
-                    Text(
-                        "Live Permission Tests",
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Button(
-                        onClick = {
-                            micMonitor.startMonitoring {
-                                micActiveApp = context.packageName // or selected app
-                                PrivacyTimelineState.log("Microphone accessed by ${micActiveApp}")
+                        TextButton(
+                            onClick = {
+                                micMonitor.stopMonitoring()
+                                micActiveApp = null
                             }
+                        ) {
+                            Text("Stop Microphone",color = MaterialTheme.colorScheme.onSurface)
+                        }
 
-                        },
+                        Spacer(Modifier.height(8.dp))
 
-                        modifier = Modifier.fillMaxWidth()
-                    ,
-                    ) {
-                        Text("Test Microphone")
-                    }
-
-                    TextButton(onClick = {
-                        micMonitor.stopMonitoring()
-                        micActiveApp = null
-                    }) {
-                        Text("Stop Microphone")
-                    }
-
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Button(
-                        onClick = { showCamera = true },
-                        enabled = !showCamera,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-
-                    ) {
-                        Text("Open Camera", color = MaterialTheme.colorScheme.onError)
+                        Button(
+                            onClick = { showCamera = true },
+                            enabled = !showCamera,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Open Camera")
+                        }
                     }
                 }
             }
-        }
 
-
-        // 📷 CAMERA PREVIEW
-        if (showCamera) {
-            item{
-                TextButton(
-                    onClick = {
-                        showCamera = false
-                        runtimeCameraRisk = false
-                    },
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Text("Close Camera")
+            // 📷 CAMERA PREVIEW
+            if (showCamera) {
+                item {
+                    TextButton(
+                        onClick = {
+                            showCamera = false
+                            runtimeCameraRisk = false
+                        }
+                    ) {
+                        Text("Close Camera")
+                    }
+                }
+                item {
+                    AnimatedVisibility(
+                        visible = showCamera,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        InAppCameraPreview {
+                            runtimeCameraRisk = true
+                            PrivacyTimelineState.log("Camera accessed")
+                        }
+                    }
                 }
             }
+
+            item { Spacer(Modifier.height(12.dp)) }
+
+            // 🔐 SENSITIVE ACCESS PANEL
             item {
-                AnimatedVisibility(
-                    visible = showCamera,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    InAppCameraPreview {
-                        runtimeCameraRisk = true
-                        PrivacyTimelineState.log("Camera accessed")
-                    }
-                }
-            }
-
-        }
-
-        item{ Spacer(Modifier.height(8.dp)) }
-
-        // 🔐 SENSITIVE ACCESS PANEL (LIVE STATE)
-        item{
-            SensitiveAccessPanel(
-                camera = runtimeCameraRisk,
-                mic = micActiveApp != null,
-                contacts = apps.any { app ->
-                    app.permissions.any { it.contains("READ_CONTACTS") }
-                },
-                location = apps.any { app ->
-                    app.permissions.any { it.contains("LOCATION") }
-                }
-            )
-
-        }
-       item{
-            Button(
-                onClick = onViewApps,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text("📱 View Installed Apps")
-            }
-        }
-
-       }
-    LaunchedEffect(runtimeCameraRisk, micActiveApp) {
-            if (WomenSafetyState.enabled &&
-                (runtimeCameraRisk || micActiveApp != null)
-            ) {
-                PrivacyTimelineState.log(
-                    "Privacy violation: Camera/Mic accessed during Women Safety Mode"
+                SensitiveAccessPanel(
+                    camera = runtimeCameraRisk,
+                    mic = micActiveApp != null,
+                    contacts = apps.any { it.permissions.any { p -> p.contains("READ_CONTACTS") } },
+                    location = apps.any { it.permissions.any { p -> p.contains("LOCATION") } }
                 )
-                showPrivacyViolationDialog = true
+            }
+
+            item { Spacer(Modifier.height(12.dp)) }
+
+            // 🔹 VIEW APPS
+            item {
+                Button(
+                    onClick = onViewApps,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Text("📱 View Installed Apps")
+                }
             }
         }
+
+
+    // 🚨 PRIVACY VIOLATION ALERT
+    LaunchedEffect(runtimeCameraRisk, micActiveApp) {
+        if (WomenSafetyState.enabled && (runtimeCameraRisk || micActiveApp != null)) {
+            showPrivacyViolationDialog = true
+        }
+    }
+
     if (showPrivacyViolationDialog) {
         AlertDialog(
-            onDismissRequest = { /* block dismiss */ },
-            title = {
-                Text("🚨 Privacy Lock Violation")
-            },
+            onDismissRequest = {},
+            title = { Text("🚨 Privacy Lock Violation") },
             text = {
                 Text(
                     "An application attempted to access your camera or microphone " +
@@ -343,16 +322,14 @@ fun MainDashboard(onViewApps: () -> Unit) {
             }
         )
     }
-
 }
-
 
 @Composable
 fun DashboardStat(title: String, value: String) {
     Card(
         modifier = Modifier.size(width = 100.dp, height = 70.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
@@ -362,13 +339,10 @@ fun DashboardStat(title: String, value: String) {
         ) {
             Text(
                 title,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                fontWeight = FontWeight.Bold,color = MaterialTheme.colorScheme.onSurface)
             Text(
                 value,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }

@@ -1,15 +1,14 @@
 package com.example.gdg_hack.ui.settings
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
@@ -17,58 +16,89 @@ fun SettingsScreen(
     onDarkModeToggle: (Boolean) -> Unit,
     onAboutClick: () -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Settings") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, null)
-                    }
-                }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp)
+    ) {
+
+        item {
+            Text(
+                text = "Preferences",
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
-    ) { padding ->
 
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-        ) {
+        item { Spacer(Modifier.height(16.dp)) }
 
-            Text("Preferences", fontWeight = FontWeight.Bold)
-
-            Spacer(Modifier.height(8.dp))
-
+        item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Dark Mode")
+                Text(
+                    text = "Dark Mode",
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Switch(
                     checked = darkMode,
-                    onCheckedChange = onDarkModeToggle
+                    onCheckedChange = { onDarkModeToggle(it) }
                 )
             }
+        }
 
-            Spacer(Modifier.height(16.dp))
+        item { Spacer(Modifier.height(24.dp)) }
 
-            Text("AI Risk Analysis", fontWeight = FontWeight.Bold)
-            Text("Uses on-device AI to predict risk level")
+        item {
+            Text(
+                text = "AI Risk Analysis",
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
 
-            Spacer(Modifier.height(16.dp))
+        item {
+            Text(
+                text = "Uses on-device AI to predict risk level",
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
 
-            Text("Privacy")
-            Text("No data leaves your device")
+        item { Spacer(Modifier.height(24.dp)) }
 
-            Spacer(Modifier.height(24.dp))
+        item {
+            Text(
+                text = "Privacy",
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        item {
+            Text(
+                text = "No data leaves your device",
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+
+        item { Spacer(Modifier.height(32.dp)) }
+
+        item {
             Divider()
-            Spacer(Modifier.height(16.dp))
+        }
 
+        item { Spacer(Modifier.height(16.dp)) }
+
+        item {
             TextButton(onClick = onAboutClick) {
-                Text("About ShadowData")
+                Text(
+                    text = "About ShadowData",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
-
         }
     }
 }
+

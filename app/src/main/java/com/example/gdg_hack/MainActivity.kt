@@ -26,8 +26,20 @@ import androidx.navigation.compose.rememberNavController
 import com.example.gdg_hack.ui.navigation.AppNavHost
 import com.example.gdg_hack.ui.theme.ShadowDataTheme
 import android.Manifest
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.gdg_hack.ui.ShadowTopBar
 import com.example.gdg_hack.ui.navigation.BottomNavigationBar
 
 class MainActivity : ComponentActivity() {
@@ -58,34 +70,69 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            ShadowDataTheme {
+            var isDarkMode by rememberSaveable { mutableStateOf(true) }
+            var showBottomBar by rememberSaveable { mutableStateOf(true) }
 
-                // 🔑 Request runtime permissions ONCE
-                LaunchedEffect(Unit) {
-                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                    micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                }
+            ShadowDataTheme(darkTheme = isDarkMode) {
+                Box(modifier = Modifier.fillMaxSize()) {
 
-                val navController = rememberNavController()
+                    // 🌳 Wood background ONLY for light mode
+                    Image(
+                        painter = painterResource(
+                            id = if (isDarkMode)
+                                R.drawable.dark_bg
+                            else
+                                R.drawable.wood_bg
+                        ),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.matchParentSize()
+                    )
 
-                // 🔐 Enforce Usage Access
-                if (!hasUsageAccess(this)) {
-                    UsageAccessGate()
-                } else {
-                    Scaffold(
-                        bottomBar = {
-                            BottomNavigationBar(navController = navController)
-                        }
-                    ) { padding ->
-                        AppNavHost(
-                            navController = navController,
-                            modifier = Modifier.padding(padding)
-                        )
+
+                    // 🔑 Request runtime permissions ONCE
+                    LaunchedEffect(Unit) {
+                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                     }
 
+                    val navController = rememberNavController()
+
+                    // 🔐 Enforce Usage Access
+                    if (!hasUsageAccess(this@MainActivity)) {
+                        UsageAccessGate()
+                    } else {
+                        Scaffold(
+                            containerColor = Color.Transparent,
+                            topBar = {
+                                ShadowTopBar(isDarkMode = isDarkMode)
+                            },
+                            bottomBar = {
+                                AnimatedVisibility(visible = showBottomBar) {
+                                    BottomNavigationBar(
+                                        navController = navController,
+                                        isDarkMode = isDarkMode
+                                    )
+
+                                }
+                            }
+                        ) { padding ->
+
+                            AppNavHost(
+                                navController = navController,
+                                isDarkMode = isDarkMode,
+                                onDarkModeToggle = { isDarkMode = it },
+                                onBottomBarVisibilityChange = { show -> showBottomBar = show },
+                                modifier = Modifier.padding(padding)
+                            )
+                        }
+
+
+                    }
                 }
             }
         }
+
     }
 }
 
@@ -108,7 +155,10 @@ fun UsageAccessGate() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Usage Access Required")
+        Text(
+            text = "Usage Access Required",
+            color = MaterialTheme.colorScheme.onBackground
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
