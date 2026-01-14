@@ -48,8 +48,6 @@ import com.example.gdg_hack.ui.safety.enableWomenSafety
 import android.provider.Settings
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.graphics.Color
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -274,7 +272,7 @@ fun MainDashboard(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 ) {
-                    Text("📱 View Installed Apps")
+                    Text("View Installed Apps")
                 }
             }
         }

@@ -41,6 +41,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.example.gdg_hack.ui.ShadowTopBar
 import com.example.gdg_hack.ui.navigation.BottomNavigationBar
+import com.example.gdg_hack.ui.theme.ThemeMode
 
 class MainActivity : ComponentActivity() {
 
@@ -70,19 +71,23 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            var isDarkMode by rememberSaveable { mutableStateOf(true) }
+            var themeMode by rememberSaveable {
+                mutableStateOf(ThemeMode.DARK)
+            }
+
             var showBottomBar by rememberSaveable { mutableStateOf(true) }
 
-            ShadowDataTheme(darkTheme = isDarkMode) {
+            ShadowDataTheme(themeMode = themeMode) {
                 Box(modifier = Modifier.fillMaxSize()) {
 
                     // 🌳 Wood background ONLY for light mode
                     Image(
                         painter = painterResource(
-                            id = if (isDarkMode)
-                                R.drawable.dark_bg
-                            else
-                                R.drawable.wood_bg
+                            id = when (themeMode) {
+                                ThemeMode.LIGHT -> R.drawable.wood_bg
+                                ThemeMode.DARK -> R.drawable.dark_bg
+                                ThemeMode.GREEN -> R.drawable.green_bg
+                            }
                         ),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
@@ -105,26 +110,23 @@ class MainActivity : ComponentActivity() {
                         Scaffold(
                             containerColor = Color.Transparent,
                             topBar = {
-                                ShadowTopBar(isDarkMode = isDarkMode)
+                                ShadowTopBar(themeMode = themeMode)
                             },
                             bottomBar = {
                                 AnimatedVisibility(visible = showBottomBar) {
-                                    BottomNavigationBar(
-                                        navController = navController,
-                                        isDarkMode = isDarkMode
-                                    )
-
+                                    BottomNavigationBar(navController, themeMode)
                                 }
                             }
                         ) { padding ->
 
                             AppNavHost(
                                 navController = navController,
-                                isDarkMode = isDarkMode,
-                                onDarkModeToggle = { isDarkMode = it },
+                                themeMode = themeMode,
+                                onThemeChange = { mode -> themeMode = mode },
                                 onBottomBarVisibilityChange = { show -> showBottomBar = show },
                                 modifier = Modifier.padding(padding)
                             )
+
                         }
 
 

@@ -9,15 +9,17 @@ import com.example.gdg_hack.ui.*
 import com.example.gdg_hack.ui.about.AboutScreen
 import com.example.gdg_hack.ui.alerts.AlertsScreen
 import com.example.gdg_hack.ui.settings.SettingsScreen
+import com.example.gdg_hack.ui.theme.ThemeMode
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    isDarkMode: Boolean,
-    onDarkModeToggle: (Boolean) -> Unit,
+    themeMode: ThemeMode,
+    onThemeChange: (ThemeMode) -> Unit,
     onBottomBarVisibilityChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 )
+
  {
     NavHost(
         navController = navController,
@@ -57,14 +59,13 @@ fun AppNavHost(
 
         composable(NavRoutes.Settings.route) {
             SettingsScreen(
+                themeMode = themeMode,
+                onThemeChange = onThemeChange,
                 onBack = { navController.popBackStack() },
-                darkMode = isDarkMode,
-                onDarkModeToggle = onDarkModeToggle,
                 onAboutClick = {
                     navController.navigate(NavRoutes.About.route)
                 }
             )
-
         }
 
 

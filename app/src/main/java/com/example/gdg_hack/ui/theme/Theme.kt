@@ -23,6 +23,18 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = DarkTextWhite
 
 )
+private val GreenColorScheme = darkColorScheme(
+    primary = GreenLight,
+    secondary = GreenPrimary,
+    background = Color.Transparent,
+    surface = GreenDarkSurface,
+    surfaceVariant = GreenDarkCard,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onBackground = Color.White,
+    onSurface = Color.White
+)
+
 private val LightColorScheme = lightColorScheme(
     primary = Color(0xFF6D4C41),      // Deep wood brown
     onPrimary = Color(0xFFFFF3E0),    // Cream text
@@ -46,10 +58,14 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun ShadowDataTheme(
-    darkTheme: Boolean,
+    themeMode: ThemeMode,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val colorScheme = when (themeMode) {
+        ThemeMode.LIGHT -> LightColorScheme
+        ThemeMode.DARK -> DarkColorScheme
+        ThemeMode.GREEN -> GreenColorScheme
+    }
 
     MaterialTheme(
         colorScheme = colorScheme,
@@ -57,3 +73,4 @@ fun ShadowDataTheme(
         content = content
     )
 }
+

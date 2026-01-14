@@ -15,40 +15,39 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import com.example.gdg_hack.ui.theme.ThemeMode
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShadowTopBar(
-    isDarkMode: Boolean,
+    themeMode: ThemeMode,
     modifier: Modifier = Modifier
-)
+) {
+    val backgroundColor = when (themeMode) {
+        ThemeMode.LIGHT -> MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+        ThemeMode.DARK -> Color.Black
+        ThemeMode.GREEN -> Color(0xFF0A1F14)
+    }
 
-{
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(
-                if (isDarkMode)
-                    Color.Black
-                else
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
-            )
-            .padding(vertical = 20.dp, horizontal = 16.dp).clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
-
-    )
-    {
+            .background(backgroundColor)
+            .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+            .padding(vertical = 20.dp, horizontal = 16.dp)
+    ) {
         Column {
             Text(
                 text = "ShadowData",
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = Color.White,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = "Privacy & Permission Monitor",
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
+                color = Color.White.copy(alpha = 0.85f),
                 fontSize = 13.sp
             )
         }
     }
 }
+

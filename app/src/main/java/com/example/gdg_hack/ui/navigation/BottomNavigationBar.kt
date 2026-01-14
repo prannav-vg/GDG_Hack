@@ -6,11 +6,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.gdg_hack.ui.theme.ThemeMode
 
 @Composable
 fun BottomNavigationBar(
     navController: NavController,
-    isDarkMode: Boolean
+    themeMode: ThemeMode
 )
  {
     val items = listOf(
@@ -19,15 +20,13 @@ fun BottomNavigationBar(
         BottomNavItem.Alerts,
         BottomNavItem.Settings
     )
-
      NavigationBar(
-         containerColor =
-             if (isDarkMode)
-                 Color.Black
-             else
-                 MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+         containerColor = when (themeMode) {
+             ThemeMode.LIGHT -> MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+             ThemeMode.DARK -> Color.Black
+             ThemeMode.GREEN -> Color(0xFF0A1F14)
+         }
      )
-
      {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()

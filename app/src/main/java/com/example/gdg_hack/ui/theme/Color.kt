@@ -2,22 +2,18 @@ package com.example.gdg_hack.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
-
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
 
 val SafeGreen = Color(0xFF2ECC71)
 val WarningOrange = Color(0xFFF39C12)
 val DangerRed = Color(0xFFE74C3C)
 
-val CardBackground = Color.Black
-val ScreenBackground = Color(0xFFF1F4F9)
 // 🌌 DARK MODE (BLUE THEME)
 val DarkBlueSurface = Color(0xFF0D1B2A)
 val DarkBlueCard = Color(0xFF1B263B)
 val LightBlueAccent = Color(0xFF0B1763)
 val DarkTextWhite = Color(0xFFFFFFFF)
+// 🟢 GREEN THEME COLORS
+val GreenPrimary = Color(0xFF66BB6A)      // buttons, highlights
+val GreenLight = Color(0xFF1C4C1F)        // search bar, accents
+val GreenDarkSurface = Color(0xFF0B2E1A)  // background overlay
+val GreenDarkCard = Color(0xFF134E2A)     // cards / boxes
