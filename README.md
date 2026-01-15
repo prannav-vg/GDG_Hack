@@ -28,14 +28,7 @@ Generates audit-ready reports in CSV and PDF formats.
 Privacy-First Architecture
 Fully on-device processing with zero cloud dependency.
 
-Project Structure
-app/
- ├── ui/                # Compose UI screens
- ├── navigation/        # Navigation controller
- ├── utils/             # Exporters & helpers
- ├── monitoring/        # Camera & mic monitors
- ├── ml/                # AI risk prediction logic
- └── MainActivity.kt
+
 
  
 Permissions Used
